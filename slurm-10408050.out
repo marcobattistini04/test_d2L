@@ -1,0 +1,32 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 12.2.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+WARNING: The NVIDIA Driver was not detected.  GPU functionality will not be available.
+   Use the NVIDIA Container Toolkit to start this container with GPU support; see
+   https://docs.nvidia.com/datacenter/cloud-native/ .
+
+   Building ctx-to-lora @ file:///workspace
+Downloading openai (1.1MiB)
+Downloading torch (731.2MiB)
+Downloading torchaudio (3.2MiB)
+Downloading torchvision (6.9MiB)
+ Downloaded openai
+      Built ctx-to-lora @ file:///workspace
+ Downloaded torchaudio
+ Downloaded torchvision
+ Downloaded torch
+Uninstalled 7 packages in 440ms
+Installed 7 packages in 111ms
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files:  11%|█         | 1/9 [00:01<00:08,  1.04s/it]Fetching 9 files:  33%|███▎      | 3/9 [04:04<09:01, 90.33s/it]Fetching 9 files:  56%|█████▌    | 5/9 [04:06<02:57, 44.43s/it]Fetching 9 files:  78%|███████▊  | 7/9 [05:05<01:16, 38.13s/it]Fetching 9 files: 100%|██████████| 9/9 [05:05<00:00, 33.94s/it]

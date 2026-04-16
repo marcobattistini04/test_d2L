@@ -1,0 +1,47 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 12.2.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+   Building ctx-to-lora @ file:///workspace
+Downloading openai (1.1MiB)
+Downloading torchvision (6.9MiB)
+Downloading torch (731.2MiB)
+Downloading torchaudio (3.2MiB)
+ Downloaded openai
+      Built ctx-to-lora @ file:///workspace
+ Downloaded torchaudio
+ Downloaded torchvision
+ Downloaded torch
+Uninstalled 7 packages in 295ms
+Installed 7 packages in 105ms
+Python version: 3.10.12 (main, Mar  3 2026, 11:56:32) [GCC 11.4.0]
+PYTHONPATH: ['/workspace/trial_scripts', '/workspace/src', '/workspace', '/usr/lib/python310.zip', '/usr/lib/python3.10', '/usr/lib/python3.10/lib-dynload', '/workspace/.venv/lib/python3.10/site-packages']
+
+Checking packages...
+
+[OK] torch -> version: 2.6.0+cu124
+[OK] transformers -> version: 4.51.3
+[OK] datasets -> version: 3.6.0
+[2026-04-16 16:22:43,655] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+df: /root/.triton/autotune: No such file or directory
+[2026-04-16 16:22:45,647] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+[OK] peft -> version: 0.13.2
+[OK] bitsandbytes -> version: 0.49.2
+[OK] jaxtyping -> version: 0.3.7
+[OK] einops -> version: 0.8.2
+INFO 04-16 16:22:46 [importing.py:53] Triton module has been replaced with a placeholder.
+INFO 04-16 16:22:46 [__init__.py:239] Automatically detected platform cuda.
+[OK] vllm -> version: 0.8.5.post1
+[OK] wandb -> version: 0.26.0
+[OK] flash_attn -> version: 2.7.4.post1
