@@ -30,47 +30,47 @@ model = ModulatedPretrainedModel.from_state_dict(
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model.to(device)
 model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
 
-with open("data/gutenburg_sample.txt", "r") as f:
+with open("data/war_and_peace.txt", "r") as f:
     base_doc = f.read()
 
 base_tokens = tokenizer(base_doc)["input_ids"]
-
 doc_tokens = (base_tokens)[:TARGET_TOKENS]
 
-doc = tokenizer.decode(
-    doc_tokens,
-    skip_special_tokens=True,
-    clean_up_tokenization_spaces=False
-)
+if TARGET_TOKENS > len(base_tokens):
+    print("Reached max available tokens:", len(base_tokens))
+    sys.exit(2)
+
 
 print(f"Using {len(doc_tokens)} tokens as input")
 
 # ----------- PROMPT ----------- #
 chat = [{"role": "user", "content": "Tell me about this document.Write a short answer."}]
 
-input_ids = tokenizer.apply_chat_template(
+chat_ids = tokenizer.apply_chat_template(
     chat,
     add_special_tokens=False,
-    return_tensors="pt"
-).to(device)
+    return_attention_mask=False,
+    add_generation_prompt=True,
+    return_tensors="pt",
+).to(model.device)
 
+ctx_ids = torch.tensor([doc_tokens], device=device)
+
+print("VRAM before internalize:", torch.cuda.memory_allocated() / 1e9)
+
+with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
+    model._internalize_from_ids(ctx_ids)
+
+print("VRAM after internalize:", torch.cuda.memory_allocated() / 1e9)
 
 try:
-    print("Internalizing document...")
-    model.internalize(doc)
-
     print("Generating...")
-    with torch.no_grad():
-        with torch.autocast(device_type="cuda", dtype=torch.float16):
-            outputs = model.generate(
-                input_ids=input_ids,
-                max_new_tokens=32
-            )
+    with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
+        outputs = model.generate(input_ids=chat_ids, max_new_tokens=100)
 
     print("SUCCESS")
 
@@ -82,6 +82,7 @@ try:
 except RuntimeError as e:
     if "out of memory" in str(e).lower():
         print("CUDA OUT OF MEMORY")
+        print(tokenizer.decode(outputs[0]))
         torch.cuda.empty_cache()
         sys.exit(1)
     else:

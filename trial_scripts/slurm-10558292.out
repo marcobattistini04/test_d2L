@@ -1,0 +1,527 @@
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 12.2.0
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+Testing 2000 tokens
+   Building ctx-to-lora @ file:///workspace
+Downloading torchaudio (3.2MiB)
+Downloading torch (731.2MiB)
+Downloading torchvision (6.9MiB)
+Downloading pydantic-core (2.0MiB)
+Downloading openai (1.1MiB)
+      Built ctx-to-lora @ file:///workspace
+ Downloaded openai
+ Downloaded pydantic-core
+ Downloaded torchaudio
+ Downloaded torchvision
+ Downloaded torch
+Uninstalled 12 packages in 547ms
+Installed 12 packages in 113ms
+[2026-04-19 08:20:14,272] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+df: /root/.triton/autotune: No such file or directory
+[2026-04-19 08:20:16,087] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.89s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.26s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:03<00:00,  1.51s/it]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.14it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.18it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.37it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.61it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 2000 tokens as input
+VRAM before internalize: 9.768777216
+VRAM after internalize: 9.741907968
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 2500 tokens
+   Building ctx-to-lora @ file:///workspace
+      Built ctx-to-lora @ file:///workspace
+Uninstalled 1 package in 0.60ms
+Installed 1 package in 1ms
+[2026-04-19 08:20:37,457] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:20:38,623] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.33it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.55it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.38it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.64it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.74it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 2500 tokens as input
+VRAM before internalize: 9.768781312
+VRAM after internalize: 9.782093312
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 3000 tokens
+[2026-04-19 08:20:54,516] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:20:55,137] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.29it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.49it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.39it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.65it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.80it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3000 tokens as input
+VRAM before internalize: 9.768784896
+VRAM after internalize: 9.782096896
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 3500 tokens
+[2026-04-19 08:21:10,948] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:21:11,582] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.76it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.41it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.70it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.80it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3500 tokens as input
+VRAM before internalize: 9.768788992
+VRAM after internalize: 9.782100992
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 4000 tokens
+[2026-04-19 08:21:27,519] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:21:28,149] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.41it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.71it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.71it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.46it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.78it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 4500 tokens
+[2026-04-19 08:21:44,284] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:21:44,922] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.40it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.70it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.72it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 5000 tokens
+[2026-04-19 08:22:01,015] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:22:01,716] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.39it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.66it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.74it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.83it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 5500 tokens
+[2026-04-19 08:22:17,756] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:22:18,399] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.77it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.73it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.84it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 6000 tokens
+[2026-04-19 08:22:34,401] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:22:35,047] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.38it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.65it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.72it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.79it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 6500 tokens
+[2026-04-19 08:22:51,302] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:22:51,928] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.35it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.60it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.73it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.80it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 7000 tokens
+[2026-04-19 08:23:07,926] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:23:08,554] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.37it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.63it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.38it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.63it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.72it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 7500 tokens
+[2026-04-19 08:23:24,809] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:23:25,454] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.39it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.67it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.70it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.81it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 8000 tokens
+[2026-04-19 08:23:41,506] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:23:42,145] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.73it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.48it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.81it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 8500 tokens
+[2026-04-19 08:23:58,087] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:23:58,715] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.62it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.61it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.70it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 9000 tokens
+[2026-04-19 08:24:15,051] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:24:15,692] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.81it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.85it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 9500 tokens
+[2026-04-19 08:24:31,736] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:24:32,388] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.36it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.61it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.72it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.80it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 10000 tokens
+[2026-04-19 08:24:48,437] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:24:49,071] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.40it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.68it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.48it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.82it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 10500 tokens
+[2026-04-19 08:25:05,058] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:25:05,698] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.39it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.68it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.45it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.49it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.83it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 11000 tokens
+[2026-04-19 08:25:21,801] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:25:22,439] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.76it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.71it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.48it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.82it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 11500 tokens
+[2026-04-19 08:25:38,477] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:25:39,118] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.72it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.74it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.48it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.82it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 12000 tokens
+[2026-04-19 08:25:55,119] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:25:55,760] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.74it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.74it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.46it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.78it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 12500 tokens
+[2026-04-19 08:26:11,837] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:26:12,470] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.46it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.80it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.50it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.85it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 13000 tokens
+[2026-04-19 08:26:28,743] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:26:29,371] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.43it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.40it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.68it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.48it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.81it/s]
+Using attention mask for resampler
+Using position ids for resampler
+The input hidden states seems to be silently casted in float32, this might be related to the fact you have upcasted embedding or layer norm layers in float32. We will cast back the input in torch.float16.
+Using 3932 tokens as input
+VRAM before internalize: 9.768792576
+VRAM after internalize: 9.782104576
+Generating...
+****************************************************************************************************
+
+Using internalized LoRAs for generation
+
+****************************************************************************************************
+SUCCESS
+Testing 13500 tokens
+[2026-04-19 08:26:45,316] [INFO] [real_accelerator.py:254:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-19 08:26:45,961] [INFO] [logging.py:107:log_dist] [Rank -1] [TorchCheckpointEngine] Initialized with serialization = False
+lora_config: LoraConfig(peft_type=<PeftType.LORA: 'LORA'>, auto_mapping=None, base_model_name_or_path='google/gemma-2-2b-it', revision=None, task_type='CAUSAL_LM', inference_mode=False, r=8, target_modules={'down_proj'}, lora_alpha=45.254833995939045, lora_dropout=0.0, fan_in_fan_out=False, bias='none', use_rslora=False, modules_to_save=None, init_lora_weights=True, layers_to_transform=None, layers_pattern=None, rank_pattern={}, alpha_pattern={}, megatron_config=None, megatron_core='megatron.core', loftq_config={}, use_dora=False, layer_replication=None, runtime_config=LoraRuntimeConfig(ephemeral_gpu_offload=False))
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.46it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.79it/s]
+You are attempting to use Flash Attention 2.0 without specifying a torch dtype. This might lead to unexpected behaviour
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.42it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.72it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.75it/s]
+Reached max available tokens: 3932
+OOM at 13500

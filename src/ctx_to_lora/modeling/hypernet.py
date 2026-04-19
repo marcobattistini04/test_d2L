@@ -644,16 +644,7 @@ class ModulatedPretrainedModel(nn.Module):
                     position_ids.size(0), device=position_ids.device, dtype=torch.int32
                 )
                 # [bsz + 1]
-                cu_seqlens = torch.cat(
-                    (
-                        indices[position_ids == 0],
-                        torch.tensor(
-                            position_ids.size(),
-                            device=position_ids.device,
-                            dtype=torch.int32,
-                        ),
-                    )
-                )
+                cu_seqlens = torch.torch.empty(position_ids.size(0) + 1, device=position_ids.device, dtype=torch.int32)
                 ctx_encoder_kwargs = dict(
                     input_ids=ctx_ids.squeeze(0),
                     cu_seqlens=cu_seqlens,
@@ -664,9 +655,12 @@ class ModulatedPretrainedModel(nn.Module):
                 )
 
             ctx_features = self.ctx_encoder(**ctx_encoder_kwargs, **kwargs)
+            ctx_features = ctx_features.contiguous()
 
         if isinstance(self.ctx_encoder.base_model, ModernBertModel):
-            ctx_features = ctx_features.unsqueeze(0)
+            if ctx_features.dim() == 2:
+                ctx_features = ctx_features.unsqueeze(0)
+                
         if self.user_defined_scaling == 1:
             return self.hypernet.generate_weights(
                 ctx_features, ctx_attn_mask, ctx_position_ids
@@ -675,9 +669,13 @@ class ModulatedPretrainedModel(nn.Module):
         lora_dict, _ = self.hypernet.generate_weights(
             ctx_features, ctx_attn_mask, ctx_position_ids
         )
+
+        scale = self.user_defined_scaling
+
         for module in lora_dict:
-            lora_dict[module]["A"] = lora_dict[module]["A"] * self.user_defined_scaling
-            lora_dict[module]["B"] = lora_dict[module]["B"] * self.user_defined_scaling
+            lora_dict[module]["A"].mul_(scale)
+            lora_dict[module]["B"].mul_(scale)
+
         return lora_dict, None
 
     def enable_iterative_mode(self, x: bool):
@@ -796,10 +794,14 @@ class ModulatedPretrainedModel(nn.Module):
         if ctx_attn_mask is None and ctx_position_ids is None:
             assert ctx_ids.shape[0] == 1
             ctx_attn_mask = torch.ones_like(ctx_ids)
-        generated_loras, generated_layernorms = self.generate_weights(
-            ctx_ids, ctx_attn_mask, ctx_position_ids
-        )
+        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
+            generated_loras, generated_layernorms = self.generate_weights(
+                ctx_ids, ctx_attn_mask, ctx_position_ids
+            )
         self.generated_loras = generated_loras
+
+        del generated_layernorms
+        torch.cuda.empty_cache()
 
     def reset(self):
         self.generated_loras = None

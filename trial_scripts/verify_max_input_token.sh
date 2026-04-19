@@ -17,7 +17,7 @@ docker run --rm \
     $IMAGE_NAME \
     bash -c '
 
-    TOK=2650
+    TOK=9000
 
     while true
     do
@@ -25,11 +25,16 @@ docker run --rm \
 
         uv run python3 /workspace/trial_scripts/verify_max_input_token.py --tokens $TOK
 
-        if [ $? -ne 0 ]; then
+        STATUS=$?
+
+        if [ $STATUS -eq 1 ]; then
             echo "OOM at $TOK"
+            break
+        elif [ $STATUS -eq 2 ]; then
+            echo "Max tokens reached"
             break
         fi
 
-        TOK=$((TOK + 5))
+        TOK=$((TOK + 500))
     done '
     

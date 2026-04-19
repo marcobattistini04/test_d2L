@@ -15,9 +15,6 @@ hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-print(torch.cuda.current_device())       # output: 0 (la GPU 2 del server ora è cuda:0)
-print(torch.cuda.get_device_name(0))    # dovrebbe stampare il nome della GPU 2
-
 checkpoint_path = "trained_d2l/gemma_demo/checkpoint-80000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
@@ -27,13 +24,16 @@ model = ModulatedPretrainedModel.from_state_dict(
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
+model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
 
-with open("data/sakana_wiki.txt", "r") as f:
+with open("data/gutenburg_sample.txt", "r") as f:
     doc = f.read()
 
-chat = [{"role": "user", "content": "Tell me about Sakana AI.Write a short answer."}]
+doc_tokens = tokenizer(doc)["input_ids"]
+
+chat = [{"role": "user", "content": "Tell me about this document.Write a short answer."}]
 chat_ids = tokenizer.apply_chat_template(
     chat,
     add_special_tokens=False,
@@ -42,7 +42,11 @@ chat_ids = tokenizer.apply_chat_template(
     return_tensors="pt",
 ).to(model.device)
 
-model.internalize(doc)
+ctx_ids = torch.tensor([doc_tokens], device=device)
 
-outputs = model.generate(input_ids=chat_ids, max_new_tokens=512)
+with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
+    model._internalize_from_ids(ctx_ids)
+    outputs = model.generate(input_ids=chat_ids, max_new_tokens=300)
+
 print(tokenizer.decode(outputs[0]))
+torch.cuda.empty_cache()
