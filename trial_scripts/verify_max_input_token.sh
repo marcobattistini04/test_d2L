@@ -17,7 +17,7 @@ docker run --rm \
     $IMAGE_NAME \
     bash -c '
 
-    TOK=9000
+    TOK=9500
 
     while true
     do
@@ -35,6 +35,6 @@ docker run --rm \
             break
         fi
 
-        TOK=$((TOK + 500))
+        TOK=$((TOK + 50))
     done '
     
