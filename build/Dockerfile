@@ -40,6 +40,7 @@ RUN uv pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --torch-ba
 RUN uv pip install tokenizers==0.21.0
 RUN uv pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.6cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
 RUN uv pip install flashinfer-python==0.2.2 -i https://flashinfer.ai/whl/cu124/torch2.6
+RUN uv pip install "xopen>=1.8,<2" tqdm
 
 
 RUN uv pip install -e .
