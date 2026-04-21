@@ -1,5 +1,6 @@
 import os
-
+import json
+import sys
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.6,max_split_size_mb:128,expandable_segments:True"
 
 import torch
@@ -9,18 +10,6 @@ import flashinfer
 from huggingface_hub import login
 from ctx_to_lora.model_loading import get_tokenizer
 from ctx_to_lora.modeling.hypernet import ModulatedPretrainedModel
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--doc", type=str, required=True)
-parser.add_argument("--question", type=str, required=True)
-parser.add_argument("--gold_answer", type=str, required=True)
-
-args = parser.parse_args()
-
-doc = args.doc
-question = args.question
-gold_answer = args.gold_answer
 
 hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
@@ -39,24 +28,36 @@ model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
 
-doc_tokens = tokenizer(doc)["input_ids"]
+for line in sys.stdin:
+    if not line.strip():
+        continue
+    
+    data = json.loads(line)
+    doc = data["full_context"]
+    gold_answer = data["answers"][0] if data["answers"] else "No answer provided."
+    question = data["question"]
 
-chat = [{"role": "user", "content": "Tell me about this document.Write a short answer."}]
-chat_ids = tokenizer.apply_chat_template(
-    chat,
-    add_special_tokens=False,
-    return_attention_mask=False,
-    add_generation_prompt=True,
-    return_tensors="pt",
-).to(model.device)
+    doc_tokens = tokenizer(doc)["input_ids"]
 
-ctx_ids = torch.tensor([doc_tokens], device=device)
+    inference = question + ". Write a short answer."
 
-with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
-    model._internalize_from_ids(ctx_ids)
-    outputs = model.generate(input_ids=chat_ids, max_new_tokens=300)
+    chat = [{"role": "user", "content": f"{inference}"}]
+    chat_ids = tokenizer.apply_chat_template(
+        chat,
+        add_special_tokens=False,
+        return_attention_mask=False,
+        add_generation_prompt=True,
+        return_tensors="pt",
+    ).to(model.device)
 
-print("GOLD ANSWER:", gold_answer)
-print("GENERATED ANSWER:", tokenizer.decode(outputs[0]))
-torch.cuda.empty_cache()
+    ctx_ids = torch.tensor([doc_tokens], device=device)
+
+    with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
+        model._internalize_from_ids(ctx_ids)
+        outputs = model.generate(input_ids=chat_ids, max_new_tokens=50)
+
+    print("QUESTION:", question)
+    print("GOLD ANSWER:", gold_answer)
+    print("GENERATED ANSWER:", tokenizer.decode(outputs[0]))
+    torch.cuda.empty_cache()
 

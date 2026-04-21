@@ -1,8 +1,6 @@
 #!/bin/bash
 
 IMAGE_NAME="immagine_prova_latest:latest"
-FILE="/workspace/data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_0.jsonl.gz"
-PY_SCRIPT="/workspace/trial_scripts/lost_in_the_middle/compact_ctx_model_answering.py"
 
 
 docker run --rm \
@@ -17,8 +15,8 @@ docker run --rm \
     -e PYTHONPATH="/workspace" \
     $IMAGE_NAME \
     bash -c "
-      uv run python3 /workspace/trial_scripts/lost_in_the_middle/compact_ctx_model_answering.py \
+      uv run python3 /workspace/trial_scripts/lost_in_the_middle/ctx_data_extractor.py \
       --file_path /workspace/data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_0.jsonl.gz \
-      --gold_index 0
+        | uv run python3 /workspace/trial_scripts/lost_in_the_middle/compact_ctx_model_answering.py
     "
 done
