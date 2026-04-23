@@ -11,7 +11,7 @@ docker run --rm \
     $IMAGE_NAME \
     bash -c '
     for gold_index in 0 4 9; do
-    uv run python3 /workspace/trial_scripts/lost_in_the_middle/generate_context_files.py \
+    python3 /workspace/trial_scripts/lost_in_the_middle/generate_context_files.py \
         --input-path /workspace/data/lost_in_the_middle/nq-open-contriever-msmarco-retrieved-documents.jsonl.gz \
         --num-total-documents 10 \
         --gold-index ${gold_index} \

@@ -14,4 +14,4 @@ docker run --rm \
     -v "/home/battistini/test_d2L/trial_scripts:/workspace/trial_scripts" \
     -e PYTHONPATH="/workspace" \
     $IMAGE_NAME \
-    uv run python3 /workspace/trial_scripts/verify_chat_template.py
+    python3 /workspace/trial_scripts/verify_chat_template.py

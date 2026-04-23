@@ -15,5 +15,5 @@ docker run --rm \
     -v "/home/battistini/.cache/huggingface:/root/.cache/huggingface" \
     -e PYTHONPATH="/workspace" \
     $IMAGE_NAME \
-    uv run python3 /workspace/trial_scripts/download_model_and_generate.py
+    python3 /workspace/trial_scripts/download_model_and_generate.py
     

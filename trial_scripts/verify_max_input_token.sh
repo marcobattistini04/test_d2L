@@ -23,7 +23,7 @@ docker run --rm \
     do
         echo "Testing $TOK tokens"
 
-        uv run python3 /workspace/trial_scripts/verify_max_input_token.py --tokens $TOK
+        python3 /workspace/trial_scripts/verify_max_input_token.py --tokens $TOK
 
         STATUS=$?
 
