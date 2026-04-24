@@ -17,7 +17,7 @@ docker run --rm \
     $IMAGE_NAME \
     bash -c '
     python3 /workspace/trial_scripts/lost_in_the_middle/ctx_data_extractor.py \
-    /workspace/data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_9.jsonl.gz \
+    /workspace/data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_5.jsonl.gz \
     | while IFS= read -r line
     do
         question=$(echo "$line" | jq -r '.question')

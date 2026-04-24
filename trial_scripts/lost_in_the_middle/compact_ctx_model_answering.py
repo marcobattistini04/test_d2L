@@ -89,7 +89,7 @@ print(scores)
 scores = rouge_scores_multi(generated_answer, gold_answers)
 
 log_rouge_jsonl(
-    "trial_scripts/lost_in_the_middle/gold_file_9_results.jsonl",
+    "trial_scripts/lost_in_the_middle/gold_file_5_results.jsonl",
     question,
     generated_answer,
     gold_answers,
