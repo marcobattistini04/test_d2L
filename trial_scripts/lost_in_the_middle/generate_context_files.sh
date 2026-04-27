@@ -9,7 +9,7 @@ docker run --rm \
     -e PYTHONPATH="/workspace" \
     $IMAGE_NAME \
     bash -c '
-    for gold_index in 1 2 3 5 6 7 8; do
+    for gold_index in 1 2 3 4 5 6 7 8 9; do
     python3 /workspace/trial_scripts/lost_in_the_middle/generate_context_files.py \
         --input-path /workspace/data/lost_in_the_middle/nq-open-contriever-msmarco-retrieved-documents.jsonl.gz \
         --num-total-documents 10 \
