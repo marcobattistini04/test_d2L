@@ -23,7 +23,7 @@ def validate_sample(item):
 
     return True, "No errors"
 
-def stream_dataset(file_path, n=100):
+def stream_dataset(file_path, n=1000):
     open_func = gzip.open if file_path.endswith(".gz") else open
 
     count = 0
@@ -64,6 +64,6 @@ def stream_dataset(file_path, n=100):
 if __name__ == "__main__":
     file_path = sys.argv[1]
 
-    for sample in stream_dataset(file_path, n=100):
+    for sample in stream_dataset(file_path, n=1000):
         # print JSON in one line (for easier bash processing)
         print(json.dumps(sample, ensure_ascii=False))

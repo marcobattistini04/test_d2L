@@ -106,3 +106,10 @@ def rouge_scores_multi(pred, gold_list):
         "ROUGE-2": rouge_n_multi(pred, gold_list, 2),
         "ROUGE-L": rouge_l_multi(pred, gold_list)
     }
+
+def accuracy(pred, gold_answer):
+    pred_tokens = set(normalize(pred))
+    gold_tokens = set(normalize(gold_answer))
+    if pred_tokens == gold_tokens:
+        return 1.0
+    return 0.0

@@ -15,20 +15,4 @@ docker run --rm \
     -v "/home/battistini/.cache/huggingface:/root/.cache/huggingface" \
     -e PYTHONPATH="/workspace/src:/workspace" \
     $IMAGE_NAME \
-    bash -c '
-    python3 /workspace/trial_scripts/lost_in_the_middle/ctx_data_extractor.py \
-    /workspace/data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_9.jsonl.gz \
-    | while IFS= read -r line
-    do
-        question=$(echo "$line" | jq -r '.question')
-        doc=$(echo "$line" | jq -r '.full_context')
-        gold=$(echo "$line" | jq -r '.answers')
-
-        echo "Running inference..."
-
-        python3 /workspace/trial_scripts/lost_in_the_middle/compact_ctx_model_answering.py \
-            --doc "$doc" \
-            --question "$question" \
-            --gold_answers "$gold"
-    done
-    '
+    python3 /workspace/trial_scripts/lost_in_the_middle/compact_ctx_model_answering_vs2.py \
