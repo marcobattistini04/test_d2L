@@ -107,9 +107,12 @@ def rouge_scores_multi(pred, gold_list):
         "ROUGE-L": rouge_l_multi(pred, gold_list)
     }
 
-def accuracy(pred, gold_answer):
+def accuracy(pred, gold_answers):
     pred_tokens = set(normalize(pred))
-    gold_tokens = set(normalize(gold_answer))
-    if pred_tokens == gold_tokens:
-        return 1.0
+
+    for gold in gold_answers:
+        gold_tokens = set(normalize(gold))
+        if pred_tokens == gold_tokens:
+            return 1.0
+
     return 0.0

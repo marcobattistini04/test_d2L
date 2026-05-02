@@ -48,7 +48,7 @@ model.to(device)
 model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
-file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_0.jsonl.gz"
+file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_9.jsonl.gz"
 
 for sample in stream_dataset(file_path, n=1000):
     question = sample["question"]
@@ -57,7 +57,7 @@ for sample in stream_dataset(file_path, n=1000):
     
     doc_tokens = tokenizer(doc)["input_ids"]
 
-    inference = "Write a SHORT answer to the following question. You MUST use only the information that you have learned by internalizing the LAST document. The LAST document CONTAINS FOR SURE THE ANSWER to the question. DO NOT ASSUME. DO NOT ALLUCINATE. THINK TWICE. The question is: " + question
+    inference = "Write a SHORT answer to the following question. Use few words. You MUST use only the information that you have learned by internalizing the LAST document. The LAST document CONTAINS THE ANSWER to the question. DO NOT ASSUME. DO NOT ALLUCINATE. THINK TWICE. The question is: " + question
 
     chat = [{"role": "user", "content": f"{inference}"}]
     chat_ids = tokenizer.apply_chat_template(
@@ -88,7 +88,7 @@ for sample in stream_dataset(file_path, n=1000):
     accuracy_score = accuracy(generated_answer, gold_answers)
 
     log_rouge_jsonl(
-        "trial_scripts/lost_in_the_middle/gold_file_0_results.jsonl",
+        "trial_scripts/lost_in_the_middle/gold_file_9_results.jsonl",
         question,
         generated_answer,
         gold_answers,
