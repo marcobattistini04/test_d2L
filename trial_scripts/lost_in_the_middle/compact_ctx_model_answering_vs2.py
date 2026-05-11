@@ -48,7 +48,7 @@ model.to(device)
 model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
-file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_9.jsonl.gz"
+file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_0.jsonl.gz"
 
 for sample in stream_dataset(file_path, n=1000):
     question = sample["question"]
@@ -88,7 +88,7 @@ for sample in stream_dataset(file_path, n=1000):
     accuracy_score = accuracy(generated_answer, gold_answers)
 
     log_rouge_jsonl(
-        "trial_scripts/lost_in_the_middle/gold_file_9_results.jsonl",
+        "trial_scripts/lost_in_the_middle/only_gold_contexts_results.jsonl",
         question,
         generated_answer,
         gold_answers,
