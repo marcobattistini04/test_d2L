@@ -2,7 +2,7 @@ import os
 import json
 import sys
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.6,max_split_size_mb:128,expandable_segments:True"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import re
 from rouge_metrics import rouge_scores_multi
@@ -88,29 +88,26 @@ def generate_all_chunk_loras(
         torch.cuda.empty_cache()
     return all_loras
 
-def merge_loras_by_module(all_loras):
-    merged = {
-        module: {"A": [], "B": []}
-        for module in all_loras[0].keys()
-    }
-
-    # accumulate per module
-    for lora in all_loras:
-        for module in lora:
-            merged[module]["A"].append(lora[module]["A"])
-            merged[module]["B"].append(lora[module]["B"])
-
-    # concat finale
-    final_loras = {}
-
-    for module in merged:
-        final_loras[module] = {
-            "A": torch.cat(merged[module]["A"], dim=0).contiguous(),
-            "B": torch.cat(merged[module]["B"], dim=1).contiguous(),
-        }
-
-    return final_loras
-
+#final is the external dict
+#every lora's module contains 3 parts: q_proj, k_proj and v_proj (question, key, value). All this parts are
+#divided into two parts: A ad B
+#the external for cicle last three iterations one for each module part.
+#every iteration concat all the same parts (ex q1A, q2A..) and then this concat is added in the final dictionary.
+#final is structured like this:
+# final {
+#    "q_proj" : {
+#       "A": A_q,
+#      "B", B_q
+#   }
+#  "k_proj" : {
+#      "A": A_k,
+#      "B", B_k
+#  }
+#  "v_proj" : {
+#      "A": A_v,
+#      "B", B_v
+#  }
+#}
 def concatenate_loras_equation_9(all_loras):
     final = {}
     for module in all_loras[0]:
@@ -137,7 +134,7 @@ hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-checkpoint_path = "trained_d2l/gemma_demo/checkpoint-80000/pytorch_model.bin"
+checkpoint_path = "trained_d2l/gemma_2b_d2l/checkpoint-20000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
 model = ModulatedPretrainedModel.from_state_dict(
@@ -150,7 +147,7 @@ model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
 
-file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_0.jsonl.gz"
+file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_9.jsonl.gz"
 
 for sample in stream_dataset(file_path, n=1000):
     question = sample["question"]
@@ -164,9 +161,6 @@ for sample in stream_dataset(file_path, n=1000):
 
     # GENERATING LORAS FOR EACH CHUNK
     all_loras = generate_all_chunk_loras(model, tokenizer, chunks)
-
-    # MERGING LORAS BY MODULE
-    #final_loras = merge_loras_by_module(all_loras)
 
     # MERGING LORAS WITH EQUATION 9
     final_loras = concatenate_loras_equation_9(all_loras)
@@ -204,7 +198,7 @@ for sample in stream_dataset(file_path, n=1000):
     print(scores, "ACCURACY:", accuracy_score)
 
     log_rouge_jsonl(
-        "trial_scripts/lost_in_the_middle/adapters_concatenation_results.jsonl",
+        "trial_scripts/lost_in_the_middle/adapters_concatenation_results_gold_at_9_gemma_2b.jsonl",
         question,
         generated_answer,
         gold_answers,
