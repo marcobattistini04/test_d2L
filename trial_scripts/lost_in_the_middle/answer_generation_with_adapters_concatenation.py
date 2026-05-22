@@ -154,7 +154,7 @@ for sample in stream_dataset(file_path, n=1000):
     gold_answers = sample["answers"]
     doc = sample["full_context"]
 
-    inference = "Write a SHORT answer to the following question. Use few words. You MUST use only the information that you have learned by internalizing the LAST document. The LAST document CONTAINS THE ANSWER to the question. DO NOT ASSUME. DO NOT ALLUCINATE. THINK TWICE. The question is: " + question
+    inference = "Write a SHORT answer to the following question. Use few words. DO NOT ASSUME. DO NOT ALLUCINATE. THINK TWICE. The question is: " + question
 
     # CHUNKING DOCUMENT
     chunks = chunk_document(doc, tokenizer, chunk_size=1024)
