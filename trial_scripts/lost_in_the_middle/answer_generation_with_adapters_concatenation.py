@@ -134,7 +134,7 @@ hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-checkpoint_path = "trained_d2l/gemma_2b_d2l/checkpoint-20000/pytorch_model.bin"
+checkpoint_path = "trained_d2l/qwen_4b_d2l/checkpoint-20000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
 model = ModulatedPretrainedModel.from_state_dict(
@@ -147,65 +147,66 @@ model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
 
-file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_9.jsonl.gz"
+for i in range (10):
+    file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_" + str(i) + ".jsonl.gz"
 
-for sample in stream_dataset(file_path, n=1000):
-    question = sample["question"]
-    gold_answers = sample["answers"]
-    doc = sample["full_context"]
+    for sample in stream_dataset(file_path, n=1000):
+        question = sample["question"]
+        gold_answers = sample["answers"]
+        doc = sample["full_context"]
 
-    inference = "Write a SHORT answer to the following question. Use few words. DO NOT ASSUME. DO NOT ALLUCINATE. THINK TWICE. The question is: " + question
+        inference = "Question: " + question + ". Write a short and direct answer using as less words as possible. Answer:"
 
-    # CHUNKING DOCUMENT
-    chunks = chunk_document(doc, tokenizer, chunk_size=1024)
+        # CHUNKING DOCUMENT
+        chunks = chunk_document(doc, tokenizer, chunk_size=1024)
 
-    # GENERATING LORAS FOR EACH CHUNK
-    all_loras = generate_all_chunk_loras(model, tokenizer, chunks)
+        # GENERATING LORAS FOR EACH CHUNK
+        all_loras = generate_all_chunk_loras(model, tokenizer, chunks)
 
-    # MERGING LORAS WITH EQUATION 9
-    final_loras = concatenate_loras_equation_9(all_loras)
+        # MERGING LORAS WITH EQUATION 9
+        final_loras = concatenate_loras_equation_9(all_loras)
 
-    # CHANGING MODEL BEHAVIOR WITH MERGED LORAS
-    model.generated_loras = final_loras
-    model.patch_lora_forward()
+        # CHANGING MODEL BEHAVIOR WITH MERGED LORAS
+        model.generated_loras = final_loras
+        model.patch_lora_forward()
 
-    # PROMPT
-    chat = [{"role": "user", "content": f"{inference}"}]
-    chat_ids = tokenizer.apply_chat_template(
-        chat,
-        add_special_tokens=False,
-        return_attention_mask=False,
-        add_generation_prompt=True,
-        return_tensors="pt",
-    ).to(model.device)
+        # PROMPT
+        chat = [{"role": "user", "content": f"{inference}"}]
+        chat_ids = tokenizer.apply_chat_template(
+            chat,
+            add_special_tokens=False,
+            return_attention_mask=False,
+            add_generation_prompt=True,
+            return_tensors="pt",
+        ).to(model.device)
 
-    with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
-        outputs = model.generate(input_ids=chat_ids, max_new_tokens=50)
-        generated = outputs[0][chat_ids.shape[-1]:]
-    
-    # GENERATING ANSWER AND LOGGING RESULTS
-    generated_answer = tokenizer.decode(generated, skip_special_tokens=True)
-    generated_answer = re.split(r"\n|<|Answer:", generated_answer)[0]
+        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
+            outputs = model.generate(input_ids=chat_ids, max_new_tokens=50)
+            generated = outputs[0][chat_ids.shape[-1]:]
+        
+        # GENERATING ANSWER AND LOGGING RESULTS
+        generated_answer = tokenizer.decode(generated, skip_special_tokens=True)
+        generated_answer = re.split(r"\n|<|Answer:", generated_answer)[0]
 
-    print("QUESTION:", question)
-    print("GOLD ANSWER:", gold_answers)
-    print("GENERATED ANSWER:", generated_answer)
-    if isinstance(gold_answers, str):
-        gold_answers = json.loads(gold_answers)
-    
-    scores = rouge_scores_multi(generated_answer, gold_answers)
-    accuracy_score = accuracy(generated_answer, gold_answers)
-    print(scores, "ACCURACY:", accuracy_score)
+        print("QUESTION:", question)
+        print("GOLD ANSWER:", gold_answers)
+        print("GENERATED ANSWER:", generated_answer)
+        if isinstance(gold_answers, str):
+            gold_answers = json.loads(gold_answers)
+        
+        scores = rouge_scores_multi(generated_answer, gold_answers)
+        accuracy_score = accuracy(generated_answer, gold_answers)
+        print(scores, "ACCURACY:", accuracy_score)
 
-    log_rouge_jsonl(
-        "trial_scripts/lost_in_the_middle/adapters_concatenation_results_gold_at_9_gemma_2b.jsonl",
-        question,
-        generated_answer,
-        gold_answers,
-        scores,
-        accuracy_score
-    )
+        log_rouge_jsonl(
+            "trial_scripts/lost_in_the_middle/adapters_concatenation_results_gold_at_" + str(i) + "_qwen_4b_d2l.jsonl",
+            question,
+            generated_answer,
+            gold_answers,
+            scores,
+            accuracy_score
+        )
 
-    # RESETTING MODEL TO CLEAR CUDA CACHE AND AVOID LORA INTERFERENCE IN NEXT ITERATION
-    model.reset()
-    torch.cuda.empty_cache()
+        # RESETTING MODEL TO CLEAR CUDA CACHE AND AVOID LORA INTERFERENCE IN NEXT ITERATION
+        model.reset()
+        torch.cuda.empty_cache()
