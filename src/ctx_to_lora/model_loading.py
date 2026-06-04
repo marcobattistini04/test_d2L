@@ -87,7 +87,7 @@ def get_tokenizer(
 
     logger.info(f"Using chat template from {template_path}")
     chat_template = open(template_path).read()
-    chat_template = chat_template.replace("    ", "").replace("\n", "")
+    #chat_template = chat_template.replace("    ", "").replace("\n", "") REMOVED TO NOT ALTER THE TEMPLATE STRUCTURE
     tokenizer.chat_template = chat_template
     return tokenizer
 

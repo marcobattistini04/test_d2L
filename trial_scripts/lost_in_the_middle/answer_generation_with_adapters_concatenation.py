@@ -1,8 +1,9 @@
 import os
 import json
 import sys
+import time
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.6,max_split_size_mb:128,expandable_segments:True"
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 import re
 from rouge_metrics import rouge_scores_multi
@@ -17,8 +18,9 @@ from ctx_to_lora.model_loading import get_tokenizer
 from ctx_to_lora.modeling.hypernet import ModulatedPretrainedModel
 from ctx_to_lora.data.processing import tokenize_ctx_text
 
-def log_rouge_jsonl(path, question, pred, gold_list, scores, accuracy_score):
+def log_rouge_jsonl(path, elapsed_time, question, pred, gold_list, scores, accuracy_score):
     record = {
+        "elapsed_time": elapsed_time,
         "question": question,
         "prediction": pred,
         "gold_answers": gold_list,
@@ -78,7 +80,6 @@ def generate_all_chunk_loras(
 ):
     all_loras = []
     for i, chunk in enumerate(chunks):
-        print(f"Generating LoRA {i}")
         lora_dict = generate_lora_for_chunk(
             model,
             tokenizer,
@@ -134,12 +135,14 @@ hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-checkpoint_path = "trained_d2l/qwen_4b_d2l/checkpoint-20000/pytorch_model.bin"
+checkpoint_path = "trained_d2l/mistral_7b_d2l/checkpoint-20000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
 model = ModulatedPretrainedModel.from_state_dict(
     state_dict, train=False, use_sequence_packing=False
 )
+
+model = model.to(dtype=torch.bfloat16)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
@@ -155,7 +158,21 @@ for i in range (10):
         gold_answers = sample["answers"]
         doc = sample["full_context"]
 
-        inference = "Question: " + question + ". Write a short and direct answer using as less words as possible. Answer:"
+        inference_model = (
+            "You are an assistant that must give only extremely concise answers.\n"
+            "Do not include any preamble, explanation or reasoning in your answer.\n"
+            "Do not use parentheses or brackets to add notes.\n"
+            "Return ONLY the requested data. "
+            "NEVER repeat the question. "
+            "NEVER include the question in your answer. "
+            "If the answer is a name or a date, output ONLY that name or date."
+            "Example: What is the capital of France? Paris\n\n"
+        )
+
+        inference_user = f"Question: {question}"
+
+        # START TIME MEASUREMENT
+        start_time = time.perf_counter()
 
         # CHUNKING DOCUMENT
         chunks = chunk_document(doc, tokenizer, chunk_size=1024)
@@ -171,35 +188,57 @@ for i in range (10):
         model.patch_lora_forward()
 
         # PROMPT
-        chat = [{"role": "user", "content": f"{inference}"}]
+        chat = [
+            {"role": "system", "content": inference_model},
+            {"role": "user", "content": inference_user}
+        ]
         chat_ids = tokenizer.apply_chat_template(
             chat,
-            add_special_tokens=False,
-            return_attention_mask=False,
+            add_special_tokens=True,
+            return_attention_mask=True,
             add_generation_prompt=True,
             return_tensors="pt",
         ).to(model.device)
 
-        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16):
-            outputs = model.generate(input_ids=chat_ids, max_new_tokens=50)
+        
+        attention_mask = (chat_ids != tokenizer.pad_token_id).long()
+
+        # GENERATING ANSWER AND LOGGING RESULTS
+        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
+            outputs = model.generate(
+                input_ids=chat_ids,
+                attention_mask=attention_mask,
+                max_new_tokens=20,             
+                do_sample=True,               
+                num_beams=1,                   
+                temperature=0.7,
+                top_p=0.8,
+                top_k=20,
+                min_p= 0.0,              
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id
+            )   
             generated = outputs[0][chat_ids.shape[-1]:]
         
-        # GENERATING ANSWER AND LOGGING RESULTS
-        generated_answer = tokenizer.decode(generated, skip_special_tokens=True)
-        generated_answer = re.split(r"\n|<|Answer:", generated_answer)[0]
 
-        print("QUESTION:", question)
-        print("GOLD ANSWER:", gold_answers)
-        print("GENERATED ANSWER:", generated_answer)
+        generated_answer = tokenizer.decode(generated, skip_special_tokens=True)
+        generated_answer = re.sub(r'^\s*\d+[\.\)]\s*', '', generated_answer)
+        generated_answer = re.split(r"\n|<|Answer:", generated_answer)[0].strip()
+        
+        #END TIME MEASUREMENT
+        end_time = time.perf_counter()
+        elapsed_time = f"{end_time - start_time:.2f}"
+
+
         if isinstance(gold_answers, str):
             gold_answers = json.loads(gold_answers)
         
         scores = rouge_scores_multi(generated_answer, gold_answers)
         accuracy_score = accuracy(generated_answer, gold_answers)
-        print(scores, "ACCURACY:", accuracy_score)
 
         log_rouge_jsonl(
-            "trial_scripts/lost_in_the_middle/adapters_concatenation_results_gold_at_" + str(i) + "_qwen_4b_d2l.jsonl",
+            "trial_scripts/lost_in_the_middle/mistral_7b/10_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_mistral_7b_d2l.jsonl",
+            elapsed_time,
             question,
             generated_answer,
             gold_answers,
