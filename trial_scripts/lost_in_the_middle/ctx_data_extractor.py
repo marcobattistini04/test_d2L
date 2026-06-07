@@ -47,18 +47,18 @@ def stream_dataset(file_path, n=1000):
             ctxs = item["ctxs"]
 
 
-            gold_ctxs = [c for c in item["ctxs"] if c.get("isgold", True)] #TESTING ONLY WITH THE CONTEXT CONTAINING THE CORRECT ANSWER
-            full_context = "\n\n".join(
-                c.get("text", "")
-                for c in gold_ctxs
-            )               
+            # gold_ctxs = [c for c in item["ctxs"] if c.get("isgold", True)] #TESTING ONLY WITH THE CONTEXT CONTAINING THE CORRECT ANSWER
+            # full_context = "\n\n".join(
+            #     c.get("text", "")
+            #     for c in gold_ctxs
+            # )               
 
 
-            #contexts = [ #TESTING WITH ALL CTXS
-            #    f"[DOC {i+1}]\n{c.get('text', '')}"
-            #    for i, c in enumerate(ctxs)
-            #]
-            #full_context = "\n\n".join(contexts)
+            contexts = [ #TESTING WITH ALL CTXS
+               f"[DOC {i+1}]\n{c.get('text', '')}"
+               for i, c in enumerate(ctxs)
+            ]
+            full_context = "\n\n".join(contexts)
 
 
             yield {
