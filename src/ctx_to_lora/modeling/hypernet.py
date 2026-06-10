@@ -508,17 +508,17 @@ class ModulatedPretrainedModel(nn.Module):
             for module_info in get_peft_modules(layers[layer_idx], self.peft_config):
                 name = module_info["name"]
                 module = module_info["module"]
-                if getattr(module, "patched_forward", False):
-                    continue
                 logger.debug(f"Applying LoRA forward to {name}")
-                module.forward_orig = module.forward
+                if not hasattr(module, "forward_orig"):
+                    module.forward_orig = module.forward
                 module.patched_forward = True
-                module.forward = partial(
+                module._ctx_to_lora_forward = partial(
                     lora_forward_fn,
                     self=module,
                     lora_dropout_p=self.peft_config.lora_dropout,
                     scaling=self.peft_config.lora_alpha,
                 )
+                module.forward = module._ctx_to_lora_forward
 
     def _init_model(self):
         # disable adapter of the base model
@@ -728,6 +728,7 @@ class ModulatedPretrainedModel(nn.Module):
             )
 
         if generated_loras is not None:
+            self.patch_lora_forward()
             generated_loras = combine_lora(
                 generated_loras,
                 n_ctx_chunks,
@@ -809,7 +810,11 @@ class ModulatedPretrainedModel(nn.Module):
                 name = module_info["name"]
                 module = module_info["module"]
                 logger.debug(f"Resetting forward for {name}")
-                module.forward = module.forward_orig
+                if hasattr(module, "forward_orig"):
+                    module.forward = module.forward_orig
+                    del module.forward_orig
+                if hasattr(module, "_ctx_to_lora_forward"):
+                    del module._ctx_to_lora_forward
                 module.patched_forward = False
 
     @torch.inference_mode()
@@ -868,6 +873,7 @@ class ModulatedPretrainedModel(nn.Module):
             )
 
         if generated_loras is not None:
+            self.patch_lora_forward()
             generated_loras = self.combine_lora(
                 generated_loras,
                 n_ctx_chunks,
