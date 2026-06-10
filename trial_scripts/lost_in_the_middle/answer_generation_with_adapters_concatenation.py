@@ -2,6 +2,7 @@ import os
 import json
 import sys
 import time
+import gc
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.6,max_split_size_mb:128,expandable_segments:True"
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
@@ -12,11 +13,16 @@ from ctx_data_extractor import stream_dataset
 import torch
 import flash_attn
 import flashinfer
+import peft.tuners.lora.layer
 
 from huggingface_hub import login
 from ctx_to_lora.model_loading import get_tokenizer
+from collections import defaultdict
+
 from ctx_to_lora.modeling.hypernet import ModulatedPretrainedModel
+from ctx_to_lora.modeling.lora_merger import combine_lora
 from ctx_to_lora.data.processing import tokenize_ctx_text
+from ctx_to_lora.utils import get_layers
 
 from torch.nn.utils.rnn import pad_sequence
 
@@ -111,6 +117,17 @@ model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
 
+inference_model = (
+    "You are an assistant that must give only extremely concise answers.\n"
+    "Do not include any preamble, explanation or reasoning in your answer.\n"
+    "Do not use parentheses or brackets to add notes.\n"
+    "Return ONLY the requested data.\n"
+    "NEVER repeat the question.\n"
+    "NEVER include the question in your answer.\n"
+    "If the answer is a name or a date, output ONLY that name or date.\n"
+    "Example: What is the capital of France? Paris\n\n"
+)
+
 for i in range (10):
     file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_" + str(i) + ".jsonl.gz"
 
@@ -119,16 +136,15 @@ for i in range (10):
         gold_answers = sample["answers"]
         doc = sample["full_context"]
 
-        inference_model = (
-            "You are an assistant that must give only extremely concise answers.\n"
-            "Do not include any preamble, explanation or reasoning in your answer.\n"
-            "Do not use parentheses or brackets to add notes.\n"
-            "Return ONLY the requested data. "
-            "NEVER repeat the question. "
-            "NEVER include the question in your answer. "
-            "If the answer is a name or a date, output ONLY that name or date."
-            "Example: What is the capital of France? Paris\n\n"
-        )
+        if hasattr(model, "base_model"):
+            for name, module in model.base_model.named_modules():
+                if getattr(module, "patched_forward", False):
+                    if hasattr(module, "forward_orig"):
+                        module.forward = module.forward_orig
+                        del module.forward_orig
+                    module.patched_forward = False
+        
+        model.generated_loras = None
 
         inference_user = f"Question: {question}"
 
@@ -137,17 +153,14 @@ for i in range (10):
 
         # CHUNKING DOCUMENT
         chunks = chunk_document(doc, tokenizer)
+        print("Num chunks: ", len(chunks))
 
         # GENERATING LORAS FOR EACH CHUNK
         all_loras = generate_all_chunk_loras(model, tokenizer, chunks)
 
-        print("Num adapters: ", len(all_loras))
-
         n_chunks_val = torch.tensor([len(chunks)])
 
-        
-
-        #Crea i tensori concatenati
+        #GENERATING CTX_IDS AND CTX_ATTN_MASK FOR THE CHUNKS
         if tokenizer.pad_token is None:
             print("Pad token not included in the tokenizer, using default token")
             tokenizer.pad_token = tokenizer.eos_token
@@ -155,22 +168,19 @@ for i in range (10):
         ctx_ids = pad_sequence(ctx_tensors, batch_first=True, padding_value=tokenizer.pad_token_id).to(model.device)
         ctx_attn = (ctx_ids != tokenizer.pad_token_id).long().to(model.device)
 
-        #ctx_data = [tokenizer.encode_plus(c, return_tensors='pt', padding='longest', truncation=True) for c in chunks]
-        #ctx_attn = torch.stack([d['attention_mask'].squeeze(0) for d in ctx_data]).to(model.device)
+        # FOR STATIC VERSION DECOMMENT THIS
+        # merged_input = {}
+        # for module in all_loras[0].keys():
+        #     A_tensors = [lora[module]["A"].squeeze(0) for lora in all_loras]
+        #     B_tensors = [lora[module]["B"].squeeze(0) for lora in all_loras]
+        
+        #     merged_input[module] = {
+        #         "A": torch.stack(A_tensors), 
+        #         "B": torch.stack(B_tensors)
+        #     }
 
-        merged_input = {}
-        for module in all_loras[0].keys():
-            # Rimuoviamo la dimensione '1' dal chunk singolo
-            A_tensors = [lora[module]["A"].squeeze(0) for lora in all_loras]
-            B_tensors = [lora[module]["B"].squeeze(0) for lora in all_loras]
-        
-            merged_input[module] = {
-                "A": torch.stack(A_tensors), 
-                "B": torch.stack(B_tensors)
-            }
-        
-        model.generated_loras = merged_input
-        model.patch_lora_forward()
+        # model.generated_loras = merged_input
+        # model.patch_lora_forward()
 
         # PROMPT
         chat = [
@@ -186,13 +196,17 @@ for i in range (10):
             return_dict=True,
         ).to(model.device)
 
+        model_inputs = {
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"]
+        }
 
         # GENERATING ANSWER AND LOGGING RESULTS
         with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
             outputs = model.generate(
-                **inputs,
-                #ctx_ids=ctx_ids,
-                #ctx_attn_mask=ctx_attn,
+                **model_inputs,
+                ctx_ids=ctx_ids, #COMMENT FOR STATIC VERSION
+                ctx_attn_mask=ctx_attn, #COMMENT FOR STATIC VERSION
                 n_ctx_chunks=torch.tensor([len(chunks)], device=model.device),
                 max_new_tokens=20,             
                 do_sample=True,               
@@ -206,7 +220,6 @@ for i in range (10):
             )   
             generated = outputs[0][inputs["input_ids"].shape[-1]:]
         
-
         generated_answer = tokenizer.decode(generated, skip_special_tokens=True)
         generated_answer = re.sub(r'^\s*\d+[\.\)]\s*', '', generated_answer)
         generated_answer = re.split(r"\n|<|Answer:", generated_answer)[0].strip()
@@ -234,4 +247,5 @@ for i in range (10):
 
         # RESETTING MODEL TO CLEAR CUDA CACHE AND AVOID LORA INTERFERENCE IN NEXT ITERATION
         model.reset()
+        gc.collect()
         torch.cuda.empty_cache()

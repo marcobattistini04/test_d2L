@@ -98,6 +98,13 @@ def apply_lora_to_layers(
             elif mname in ["down_proj", "up_proj", "gate_proj"]:
                 long_mname = f"mlp.{mname}"
             module = attrgetter(long_mname)(layer)
+
+            print(layer_idx, long_mname)
+            print(type(module))
+            if hasattr(module, "base_layer"):
+                print("HAS BASE LAYER")
+                print(type(module.base_layer))
+                
             A = generated_loras[mname]["A"][:, layer_idx]
             B = generated_loras[mname]["B"][:, layer_idx]
             module.forward = partial(module.forward, n_qs=n_qs, tot_q=tot_q, A=A, B=B)
