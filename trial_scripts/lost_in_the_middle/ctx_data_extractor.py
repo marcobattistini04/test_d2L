@@ -53,12 +53,10 @@ def stream_dataset(file_path, n=1000):
             #     for c in gold_ctxs
             # )               
 
-
-            contexts = [ #TESTING WITH ALL CTXS
-               f"[DOC {i+1}]\n{c.get('text', '')}"
-               for i, c in enumerate(ctxs)
-            ]
-            full_context = "\n\n".join(contexts)
+            full_context = "\n".join(
+                (c.get("text", "") or "").strip()
+                for c in ctxs
+            )
 
 
             yield {

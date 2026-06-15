@@ -15,6 +15,7 @@ def compute_rank(n_lora, rank):
 def combine_lora(
     generated_loras: dict[str, dict[str, Tensor]],
     n_chunks: Integer[Tensor, "n_ctx"],
+    num_real_chunks: int,
     lora_bias: dict[str, dict[str, Tensor]] | None = None,
     scalers: Float[Tensor, "n_ctx"] | None = None,
     bias_scaler: float | None = None,
@@ -62,7 +63,12 @@ def combine_lora(
                 # slice_pattern = [g, slice(None), slice(None), slice(None)]
                 # slice_pattern[rank_dim] = slice(combined_rank)
 
-                combined[g, :, :combined_rank, :] = deltas
+                if g >= num_real_chunks:
+                    target_deltas = torch.zeros_like(deltas)
+                else:
+                    target_deltas = deltas
+
+                combined[g, :, :combined_rank, :] = target_deltas
 
                 if bias_tensor is not None:
                     # bias_slice_pattern = [g, slice(None), slice(None), slice(None)]

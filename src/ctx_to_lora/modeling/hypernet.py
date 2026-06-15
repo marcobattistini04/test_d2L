@@ -732,6 +732,7 @@ class ModulatedPretrainedModel(nn.Module):
             generated_loras = combine_lora(
                 generated_loras,
                 n_ctx_chunks,
+                num_real_chunks,
                 lora_bias=self.hypernet.get_head_bias()
                 if self.hypernet.config.use_bias
                 else None,
@@ -824,6 +825,7 @@ class ModulatedPretrainedModel(nn.Module):
         ctx_attn_mask: Integer[Tensor, "n_chunks ctx_length"] | None = None,
         ctx_position_ids: Integer[Tensor, "n_chunks ctx_length"] | None = None,
         n_ctx_chunks: Integer[Tensor, "n_ctx"] | None = None,
+        num_real_chunks: int = 0,
         n_queries: Integer[Tensor, "n_ctx"] | None = None,
         scalers: Float[Tensor, "n_ctx"] | None = None,
         bias_scaler: float | None = None,
@@ -877,6 +879,7 @@ class ModulatedPretrainedModel(nn.Module):
             generated_loras = self.combine_lora(
                 generated_loras,
                 n_ctx_chunks,
+                num_real_chunks,
                 lora_bias=self.hypernet.get_head_bias()
                 if self.hypernet.config.use_bias
                 else None,
