@@ -63,10 +63,8 @@ def combine_lora(
                 # slice_pattern = [g, slice(None), slice(None), slice(None)]
                 # slice_pattern[rank_dim] = slice(combined_rank)
 
-                if g >= num_real_chunks:
-                    target_deltas = torch.zeros_like(deltas)
-                else:
-                    target_deltas = deltas
+
+                target_deltas = deltas
 
                 combined[g, :, :combined_rank, :] = target_deltas
 

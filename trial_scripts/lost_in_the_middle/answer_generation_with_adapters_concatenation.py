@@ -3,8 +3,7 @@ import json
 import sys
 import time
 import gc
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "garbage_collection_threshold:0.6,max_split_size_mb:128,expandable_segments:True"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
 import re
 from rouge_metrics import rouge_scores_multi
@@ -40,21 +39,23 @@ def log_rouge_jsonl(path, elapsed_time, question, pred, gold_list, scores, accur
         f.flush()
         os.fsync(f.fileno())
 
-def chunk_document_tokens(text, tokenizer, chunk_size=1024, overlap=64, max_chunks=4):
+def chunk_document_tokens(text, tokenizer, chunk_size=1024, overlap=64):
     tokens = tokenizer.encode(text, add_special_tokens=False)
+    pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
     chunks = []
     start = 0
+    
     while start < len(tokens):
         end = start + chunk_size
-        chunks.append(tokens[start:end])
-        start += chunk_size - overlap
-    
-    num_real_chunks = len(chunks)
-
-    while len(chunks) < max_chunks:
-        chunks.append([tokenizer.pad_token_id] * chunk_size)
+        chunk = tokens[start:end]
         
-    return chunks[:max_chunks], num_real_chunks
+        if len(chunk) < chunk_size:
+            chunk = chunk + [pad_id] * (chunk_size - len(chunk))
+            
+        chunks.append(chunk)
+        start += chunk_size - overlap
+        
+    return chunks, len(chunks)
 
 def generate_lora_for_chunk(
     model,
@@ -100,20 +101,33 @@ hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-checkpoint_path = "trained_d2l/qwen_4b_d2l/checkpoint-20000/pytorch_model.bin"
+checkpoint_path = "trained_d2l/mistral_7b_d2l/checkpoint-20000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
+
+for key in state_dict:
+    if isinstance(state_dict[key], torch.Tensor) and state_dict[key].is_floating_point():
+        state_dict[key] = state_dict[key].to(torch.bfloat16)
 
 model = ModulatedPretrainedModel.from_state_dict(
     state_dict, train=False, use_sequence_packing=False
 )
 
-model = model.to(dtype=torch.bfloat16)
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model.to(device)
+model = model.to(device="cuda", dtype=torch.bfloat16)
 model.eval()
 
 tokenizer = get_tokenizer(model.base_model.name_or_path)
+tokenizer = get_tokenizer(model.base_model.name_or_path)
+
+
+if tokenizer.pad_token_id is None:
+    print(f"DEBUG: pad_token_id is None. Switching to eos_token_id ({tokenizer.eos_token_id})")
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+    tokenizer.pad_token = tokenizer.eos_token
+else:
+    print(f"DEBUG: pad_token_id found: {tokenizer.pad_token_id}")
+
+pad_id = tokenizer.pad_token_id
+
 
 inference_model = (
     "You are a precise question answering assistant.\n"
@@ -122,8 +136,8 @@ inference_model = (
     "If the answer is a single entity, output only that entity.\n"
 )
 
-for i in range(10):
-    file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_" + str(i) + ".jsonl.gz"
+for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]:
+    file_path = "data/lost_in_the_middle/qa_data/nq-open-20_total_documents_gold_at_" + str(i) + ".jsonl.gz"
 
     for sample in stream_dataset(file_path, n=1000):
         question = sample["question"]
@@ -139,20 +153,17 @@ for i in range(10):
         chunks, num_real_chunks = chunk_document_tokens(doc, tokenizer)
         print("Num chunks: ", num_real_chunks)
 
-        n_chunks_val = torch.tensor([len(chunks)])
-
         #GENERATING CTX_IDS AND CTX_ATTN_MASK FOR THE CHUNKS
         if tokenizer.pad_token is None:
             print("Pad token not included in the tokenizer, using default token")
             tokenizer.pad_token = tokenizer.eos_token
     
-        ctx_tensors = [
-            torch.tensor(chunk, dtype=torch.long)
-            for chunk in chunks
-        ]
+        n_chunks = len(chunks)
+        ctx_length = len(chunks[0]) # Assumendo lunghezze fisse
+        ctx_ids = torch.zeros((n_chunks, ctx_length), dtype=torch.long, device="cuda")
 
-        pad_id = tokenizer.pad_token_id
-        ctx_ids = pad_sequence(ctx_tensors, batch_first=True, padding_value=pad_id).to(model.device)
+        for i, chunk in enumerate(chunks):
+            ctx_ids[i, :] = torch.tensor(chunk, device="cuda") 
 
         ctx_attn = (ctx_ids != pad_id).to(torch.long)
         ctx_attn = ctx_attn.to(model.device)
@@ -184,9 +195,8 @@ for i in range(10):
                 ctx_attn_mask=ctx_attn, #COMMENT FOR STATIC VERSION
                 n_ctx_chunks=torch.tensor([len(chunks)], device=model.device),
                 num_real_chunks = num_real_chunks,
-                max_new_tokens=20,             
-                do_sample=True,               
-                #num_beams=1,                   
+                max_new_tokens=30,             
+                do_sample=True,                          
                 temperature=0.7,
                 top_p=0.8,
                 top_k=20,
@@ -212,7 +222,7 @@ for i in range(10):
         accuracy_score = accuracy(generated_answer, gold_answers)
 
         log_rouge_jsonl(
-            "trial_scripts/lost_in_the_middle/qwen_4b/10_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_qwen_4b_d2l.jsonl",
+            "trial_scripts/lost_in_the_middle/mistral_7b/20_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_mistral_7b_d2l.jsonl",
             elapsed_time,
             question,
             generated_answer,
