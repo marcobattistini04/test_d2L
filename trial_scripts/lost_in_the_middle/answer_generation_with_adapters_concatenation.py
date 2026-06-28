@@ -39,7 +39,7 @@ def log_rouge_jsonl(path, elapsed_time, question, pred, gold_list, scores, accur
         f.flush()
         os.fsync(f.fileno())
 
-def chunk_document_tokens(text, tokenizer, chunk_size=1024, overlap=64):
+def chunk_document_tokens(text, tokenizer, chunk_size=1024, overlap=128):
     tokens = tokenizer.encode(text, add_special_tokens=False)
     pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
     chunks = []
@@ -57,51 +57,11 @@ def chunk_document_tokens(text, tokenizer, chunk_size=1024, overlap=64):
         
     return chunks, len(chunks)
 
-def generate_lora_for_chunk(
-    model,
-    tokenizer,
-    chunk
-):
-    ctx_ids = tokenize_ctx_text(
-        {"context": [chunk]},
-        tokenizer
-    )["ctx_ids"]
-    ctx_ids = torch.tensor(
-        ctx_ids,
-        device=model.device
-    )
-    pad_id = tokenizer.pad_token_id #if tokenizer.pad_token_id is not None else -1
-    attention_mask = (ctx_ids != pad_id).long()
-    with torch.inference_mode(), \
-         torch.autocast("cuda", dtype=torch.float16):
-        lora_dict, _ = model.generate_weights(
-            ctx_ids,
-            attention_mask,
-            None
-        )
-    return lora_dict
-
-def generate_all_chunk_loras(
-    model,
-    tokenizer,
-    chunks
-):
-    all_loras = []
-    for i, chunk in enumerate(chunks):
-        lora_dict = generate_lora_for_chunk(
-            model,
-            tokenizer,
-            chunk
-        )
-        all_loras.append(lora_dict)
-        torch.cuda.empty_cache()
-    return all_loras
-
 hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-checkpoint_path = "trained_d2l/mistral_7b_d2l/checkpoint-20000/pytorch_model.bin"
+checkpoint_path = "trained_d2l/gemma_2b_d2l/checkpoint-20000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
 for key in state_dict:
@@ -136,8 +96,11 @@ inference_model = (
     "If the answer is a single entity, output only that entity.\n"
 )
 
-for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]:
-    file_path = "data/lost_in_the_middle/qa_data/nq-open-20_total_documents_gold_at_" + str(i) + ".jsonl.gz"
+for i in range(10):
+    file_path = "data/lost_in_the_middle/qa_data/nq-open-10_total_documents_gold_at_" + str(i) + ".jsonl.gz"
+
+    print(f"--- Starting processing for gold_at_{i} ---")
+    print(f"--- File path: {file_path} ---")
 
     for sample in stream_dataset(file_path, n=1000):
         question = sample["question"]
@@ -151,7 +114,6 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]:
 
         # CHUNKING DOCUMENT
         chunks, num_real_chunks = chunk_document_tokens(doc, tokenizer)
-        print("Num chunks: ", num_real_chunks)
 
         #GENERATING CTX_IDS AND CTX_ATTN_MASK FOR THE CHUNKS
         if tokenizer.pad_token is None:
@@ -186,6 +148,8 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]:
             "input_ids": inputs["input_ids"],
             "attention_mask": inputs["attention_mask"]
         }
+
+        print("Num chunks: ", num_real_chunks)
 
         # GENERATING ANSWER AND LOGGING RESULTS
         with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
@@ -222,7 +186,7 @@ for i in [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]:
         accuracy_score = accuracy(generated_answer, gold_answers)
 
         log_rouge_jsonl(
-            "trial_scripts/lost_in_the_middle/mistral_7b/20_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_mistral_7b_d2l.jsonl",
+            "trial_scripts/lost_in_the_middle/gemma_2b/10_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_gemma_2b_d2l.jsonl",
             elapsed_time,
             question,
             generated_answer,
