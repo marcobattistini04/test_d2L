@@ -61,7 +61,7 @@ hf_token = os.environ.get("HUGGINGFACE_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-checkpoint_path = "trained_d2l/gemma_2b_d2l/checkpoint-20000/pytorch_model.bin"
+checkpoint_path = "trained_d2l/mistral_7b_d2l/checkpoint-20000/pytorch_model.bin"
 state_dict = torch.load(checkpoint_path, map_location="cpu")
 
 for key in state_dict:
@@ -71,6 +71,9 @@ for key in state_dict:
 model = ModulatedPretrainedModel.from_state_dict(
     state_dict, train=False, use_sequence_packing=False
 )
+
+del state_dict
+gc.collect()
 
 model = model.to(device="cuda", dtype=torch.bfloat16)
 model.eval()
@@ -186,7 +189,7 @@ for i in range(10):
         accuracy_score = accuracy(generated_answer, gold_answers)
 
         log_rouge_jsonl(
-            "trial_scripts/lost_in_the_middle/gemma_2b/10_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_gemma_2b_d2l.jsonl",
+            "trial_scripts/lost_in_the_middle/mistral_7b/10_contexts/adapters_concatenation_results_gold_at_" + str(i) + "_mistral_7b_d2l.jsonl",
             elapsed_time,
             question,
             generated_answer,
