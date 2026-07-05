@@ -246,84 +246,165 @@ def compute_rank(n_lora, rank):
 #     return min(max(rank, min_rank), s.numel())
 
 
-# -- ARITHMETIC LOGIC !!! --
+# # -- ARITHMETIC LOGIC !!! --
+# def combine_lora(
+#     generated_loras: dict[str, dict[str, Tensor]],
+#     n_chunks: Tensor,
+#     num_real_chunks: int,
+#     lora_bias: dict[str, dict[str, Tensor]] | None = None,
+#     scalers: Tensor | None = None,
+#     bias_scaler: float | None = None,
+#     scaling_factor: float = 1.0
+# ) -> dict[str, dict[str, Tensor]]:
+#     total_chunks = int(n_chunks.sum())
+#     if bias_scaler is None:
+#         bias_scaler = 1
+        
+#     # Assume all modules share same base rank r
+#     first_module = next(iter(generated_loras))
+#     sampled_lora = generated_loras[first_module]["A"]
+#     base_rank = sampled_lora.shape[-2]
+#     device = sampled_lora.device
+#     dtype = sampled_lora.dtype
+    
+#     # [FIX 1]: Per la Task Arithmetic serve spazio per l'adapter (base_rank). 
+#     # Se c'è il bias, raddoppiamo lo spazio per accoglierlo subito dopo.
+#     max_rank_needed = (base_rank * 2) if lora_bias is not None else base_rank
+
+#     combined_loras: dict[str, dict[str, Tensor]] = {
+#         module: {"A": None, "B": None} for module in generated_loras.keys()
+#     }
+#     rank_dim = 2
+#     num_groups = len(n_chunks)
+#     rank_per_group = (n_chunks * base_rank).tolist()
+#     bias_tensor = None
+    
+#     for module_name, module_loras in generated_loras.items():
+#         for matrix_key in ("A", "B"):
+#             if lora_bias is not None:
+#                 bias_tensor = lora_bias[module_name][matrix_key]
+#             loras = module_loras[matrix_key]
+#             if (scalers is not None) and (matrix_key == "A"):
+#                 loras = loras * scalers[:, None, None, None]
+
+#             flat_loras = rearrange(
+#                 loras, "tot_chunks n_layers r dim -> 1 n_layers (tot_chunks r) dim"
+#             )
+#             per_group_deltas = flat_loras.split(rank_per_group, dim=rank_dim)
+
+#             combined_shape = [num_groups, *per_group_deltas[0].shape[1:]]
+#             combined_shape[rank_dim] = max_rank_needed
+
+#             combined = torch.zeros(*combined_shape, device=device, dtype=dtype)
+
+#             for g, deltas in enumerate(per_group_deltas):
+#                 # Ripristiniamo la struttura dei singoli chunk per questo gruppo specifico
+#                 chunks_in_group = deltas.shape[rank_dim] // base_rank
+                
+#                 # Se c'è più di un chunk in questo gruppo, facciamo la media (Arithmetic)
+#                 if chunks_in_group > 1:
+#                     reshaped_deltas = rearrange(
+#                         deltas, "1 n_layers (c r) dim -> c n_layers r dim", r=base_rank
+#                     )
+#                     # Task Arithmetic: media dei delta dei modelli * scaling_factor
+#                     fused_delta = reshaped_deltas.mean(dim=0) * scaling_factor
+#                 else:
+#                     # Se c'è un solo chunk, lo prendiamo così com'è (usando rearrange al posto di squeeze per sicurezza)
+#                     fused_delta = rearrange(deltas, "1 n_layers r dim -> n_layers r dim") * scaling_factor
+
+#                 # Inseriamo il delta fuso nel tensore combinato finale nelle prime posizioni
+#                 combined[g, :, :base_rank, :] = fused_delta
+
+#                 # Gestione del Bias
+#                 if bias_tensor is not None and bias_tensor.numel() > 0:
+#                     if bias_tensor.shape[-2] == base_rank:
+#                         # [FIX 2]: Usiamo indici espliciti fissi basati su base_rank poiché 
+#                         # l'adapter fuso occupa esattamente le posizioni da 0 a base_rank.
+#                         start = base_rank
+#                         end = start + base_rank
+#                         combined[g, :, start:end, :] = (bias_tensor * bias_scaler)
+
+#             combined_loras[module_name][matrix_key] = combined
+            
+#     return combined_loras
+
+# --- NAIVE AVERAGE LOGIC !!! ---
 def combine_lora(
     generated_loras: dict[str, dict[str, Tensor]],
-    n_chunks: Tensor,
+    n_chunks: Integer[Tensor, "n_ctx"],
     num_real_chunks: int,
     lora_bias: dict[str, dict[str, Tensor]] | None = None,
-    scalers: Tensor | None = None,
+    scalers: Float[Tensor, "n_ctx"] | None = None,
     bias_scaler: float | None = None,
-    scaling_factor: float = 1.0
 ) -> dict[str, dict[str, Tensor]]:
-    total_chunks = int(n_chunks.sum())
     if bias_scaler is None:
-        bias_scaler = 1
-        
-    # Assume all modules share same base rank r
+        bias_scaler = 1.0
+
+    # Recuperiamo il base_rank dal primo modulo disponibile
     first_module = next(iter(generated_loras))
     sampled_lora = generated_loras[first_module]["A"]
     base_rank = sampled_lora.shape[-2]
     device = sampled_lora.device
     dtype = sampled_lora.dtype
-    
-    # [FIX 1]: Per la Task Arithmetic serve spazio per l'adapter (base_rank). 
-    # Se c'è il bias, raddoppiamo lo spazio per accoglierlo subito dopo.
-    max_rank_needed = (base_rank * 2) if lora_bias is not None else base_rank
+
+    # Con il naive average il rank non si accumula in base ai chunk.
+    # Resta base_rank, oppure raddoppia se dobbiamo accodare il bias.
+    max_rank_needed = base_rank * 2 if lora_bias is not None else base_rank
 
     combined_loras: dict[str, dict[str, Tensor]] = {
         module: {"A": None, "B": None} for module in generated_loras.keys()
     }
-    rank_dim = 2
-    num_groups = len(n_chunks)
-    rank_per_group = (n_chunks * base_rank).tolist()
-    bias_tensor = None
     
+    rank_dim = 2
+    num_groups = len(n_chunks)  # Corrisponde alla dimensione "n_ctx"
+    chunks_per_group = n_chunks.tolist()
+
     for module_name, module_loras in generated_loras.items():
         for matrix_key in ("A", "B"):
-            if lora_bias is not None:
-                bias_tensor = lora_bias[module_name][matrix_key]
-            loras = module_loras[matrix_key]
-            if (scalers is not None) and (matrix_key == "A"):
-                loras = loras * scalers[:, None, None, None]
+            bias_tensor = lora_bias[module_name][matrix_key] if lora_bias is not None else None
+            loras = module_loras[matrix_key]  # Shape: [tot_chunks, n_layers, r, dim]
 
-            flat_loras = rearrange(
-                loras, "tot_chunks n_layers r dim -> 1 n_layers (tot_chunks r) dim"
-            )
-            per_group_deltas = flat_loras.split(rank_per_group, dim=rank_dim)
+            # Dividiamo i chunk direttamente sulla dimensione 0
+            per_group_loras = loras.split(chunks_per_group, dim=0)
 
-            combined_shape = [num_groups, *per_group_deltas[0].shape[1:]]
+            # Inizializziamo il tensore combinato [num_groups, n_layers, max_rank_needed, dim]
+            combined_shape = [num_groups, *per_group_loras[0].shape[1:]]
             combined_shape[rank_dim] = max_rank_needed
-
             combined = torch.zeros(*combined_shape, device=device, dtype=dtype)
 
-            for g, deltas in enumerate(per_group_deltas):
-                # Ripristiniamo la struttura dei singoli chunk per questo gruppo specifico
-                chunks_in_group = deltas.shape[rank_dim] // base_rank
+            for g, group_loras in enumerate(per_group_loras):
+                # group_loras ha shape: [chunks_del_gruppo, n_layers, r, dim]
+                num_chunks_g = group_loras.shape[0]
                 
-                # Se c'è più di un chunk in questo gruppo, facciamo la media (Arithmetic)
-                if chunks_in_group > 1:
-                    reshaped_deltas = rearrange(
-                        deltas, "1 n_layers (c r) dim -> c n_layers r dim", r=base_rank
+                # Nel naive average, il peso è equamente distribuito tra i chunk del gruppo
+                weight_g = 1.0 / num_chunks_g
+
+                # --- LOGICA DI _weighted_average_tensor APPLICATA AL GRUPPO ---
+                # Inizializziamo l'accumulatore rigorosamente in float32 sul device corretto
+                output_g = torch.zeros_like(group_loras[0], dtype=torch.float32, device=device)
+                
+                # Iteriamo sui singoli chunk del gruppo g proprio come facevi con zip(tensors, weights)
+                for c in range(num_chunks_g):
+                    tensor_c = group_loras[c].detach().to(device=device, dtype=torch.float32)
+                    output_g = output_g + float(weight_g) * tensor_c
+                
+                # Convertiamo l'output accumulato nel dtype nativo richiesto
+                merged_g = output_g.to(dtype=dtype)
+
+                # Applichiamo lo scaler specifico per questo gruppo (g) se presente
+                if (scalers is not None) and (matrix_key == "A"):
+                    # scalers ha shape [n_ctx], quindi estraiamo lo scalare del gruppo corrente
+                    merged_g = merged_g * scalers[g, None, None]
+
+                # Inseriamo il blocco mediato nel range del base_rank
+                combined[g, :, :base_rank, :] = merged_g
+
+                # Se c'è il bias, lo posizioniamo subito dopo il base_rank
+                if bias_tensor is not None:
+                    combined[g, :, base_rank : base_rank + base_rank, :] = (
+                        bias_tensor * bias_scaler
                     )
-                    # Task Arithmetic: media dei delta dei modelli * scaling_factor
-                    fused_delta = reshaped_deltas.mean(dim=0) * scaling_factor
-                else:
-                    # Se c'è un solo chunk, lo prendiamo così com'è (usando rearrange al posto di squeeze per sicurezza)
-                    fused_delta = rearrange(deltas, "1 n_layers r dim -> n_layers r dim") * scaling_factor
-
-                # Inseriamo il delta fuso nel tensore combinato finale nelle prime posizioni
-                combined[g, :, :base_rank, :] = fused_delta
-
-                # Gestione del Bias
-                if bias_tensor is not None and bias_tensor.numel() > 0:
-                    if bias_tensor.shape[-2] == base_rank:
-                        # [FIX 2]: Usiamo indici espliciti fissi basati su base_rank poiché 
-                        # l'adapter fuso occupa esattamente le posizioni da 0 a base_rank.
-                        start = base_rank
-                        end = start + base_rank
-                        combined[g, :, start:end, :] = (bias_tensor * bias_scaler)
 
             combined_loras[module_name][matrix_key] = combined
-            
+
     return combined_loras
