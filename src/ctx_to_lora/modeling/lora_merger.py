@@ -408,3 +408,119 @@ def combine_lora(
             combined_loras[module_name][matrix_key] = combined
 
     return combined_loras
+
+# # --- FISHER LOGIC!! ---
+# def combine_lora_fisher(
+#     generated_loras: dict[str, dict[str, Tensor]],
+#     generated_fishers: dict[str, dict[str, Tensor]],  # Struttura identica a generated_loras
+#     n_chunks: Integer[Tensor, "n_ctx"],
+#     num_real_chunks: int,
+#     lora_bias: dict[str, dict[str, Tensor]] | None = None,
+#     scalers: Float[Tensor, "n_ctx"] | None = None,
+#     bias_scaler: float | None = None,
+#     min_fisher: float = 1e-12,
+# ) -> dict[str, dict[str, Tensor]]:
+#     if bias_scaler is None:
+#         bias_scaler = 1.0
+
+#     # Recuperiamo il base_rank dal primo modulo disponibile
+#     first_module = next(iter(generated_loras))
+#     sampled_lora = generated_loras[first_module]["A"]
+#     base_rank = sampled_lora.shape[-2]
+#     device = sampled_lora.device
+#     dtype = sampled_lora.dtype
+
+#     max_rank_needed = base_rank * 2 if lora_bias is not None else base_rank
+
+#     combined_loras: dict[str, dict[str, Tensor]] = {
+#         module: {"A": None, "B": None} for module in generated_loras.keys()
+#     }
+    
+#     rank_dim = 2
+#     num_groups = len(n_chunks)  # Corrisponde alla dimensione "n_ctx"
+#     chunks_per_group = n_chunks.tolist()
+
+# if generated_fishers is None:
+#   print("DEBUG: generated_fishers is None, creating uniform fishers for testing.")
+#   generated_fishers = {
+#       module: {
+#         matrix_key: torch.ones_like(tensor)
+#         for matrix_key, tensor in module_loras.items()
+#       }
+#     for module, module_loras in generated_loras.items()
+#   }
+
+#     for module_name, module_loras in generated_loras.items():
+#         for matrix_key in ("A", "B"):
+#             bias_tensor = lora_bias[module_name][matrix_key] if lora_bias is not None else None
+            
+#             # Tensori dei pesi e di Fisher speculari
+#             loras = module_loras[matrix_key]               # Shape: [tot_chunks, n_layers, r, dim]
+#             fishers = generated_fishers[module_name][matrix_key]  # Shape: [tot_chunks, n_layers, r, dim]
+
+#             # Dividiamo sia i chunk dei pesi che di Fisher sulla dimensione 0
+#             per_group_loras = loras.split(chunks_per_group, dim=0)
+#             per_group_fishers = fishers.split(chunks_per_group, dim=0)
+
+#             # Inizializziamo il tensore combinato [num_groups, n_layers, max_rank_needed, dim]
+#             combined_shape = [num_groups, *per_group_loras[0].shape[1:]]
+#             combined_shape[rank_dim] = max_rank_needed
+#             combined = torch.zeros(*combined_shape, device=device, dtype=dtype)
+
+#             for g, group_loras in enumerate(per_group_loras):
+#                 group_fishers = per_group_fishers[g]
+#                 num_chunks_g = group_loras.shape[0]
+                
+#                 # Peso uniforme di fallback (naive weight) per questo gruppo
+#                 fallback_weight = 1.0 / num_chunks_g
+
+#                 # --- LOGICA FISHER APPLICATA AL GRUPPO ---
+#                 # 1. Calcoliamo i Fisher pesati (qui i pesi base sono uniformi -> fallback_weight)
+#                 # Calcolo vettorizzato su tutti i chunk del gruppo per stabilità e performance
+#                 weighted_fishers = group_fishers.detach().to(device=device, dtype=torch.float32) * fallback_weight
+                
+#                 # Somma lungo la dimensione dei chunk del gruppo (dim=0 dell'estratto)
+#                 total_fisher = torch.sum(weighted_fishers, dim=0)
+                
+#                 # Maschera di sicurezza per evitare divisioni per zero
+#                 safe_total = torch.where(
+#                     total_fisher > min_fisher,
+#                     total_fisher,
+#                     torch.ones_like(total_fisher),
+#                 )
+
+#                 output_g = torch.zeros_like(group_loras[0], dtype=torch.float32, device=device)
+                
+#                 # 2. Accumuliamo i chunk usando i pesi di Fisher calcolati dinamicamente elemento per elemento
+#                 for c in range(num_chunks_g):
+#                     tensor_c = group_loras[c].detach().to(device=device, dtype=torch.float32)
+#                     w_fisher_c = weighted_fishers[c]
+
+#                     # Calcolo del peso specifico per l'elemento del chunk corrente
+#                     element_weight = torch.where(
+#                         total_fisher > min_fisher,
+#                         w_fisher_c / safe_total,
+#                         torch.full_like(w_fisher_c, float(fallback_weight)),
+#                     )
+                    
+#                     output_g = output_g + element_weight * tensor_c
+                
+#                 # Convertiamo l'output accumulato nel dtype nativo richiesto
+#                 merged_g = output_g.to(dtype=dtype)
+
+#                 # Applichiamo lo scaler specifico per questo gruppo (g) se presente
+#                 if (scalers is not None) and (matrix_key == "A"):
+#                     merged_g = merged_g * scalers[g, None, None]
+
+#                 # Inseriamo il blocco mediato nel range del base_rank
+#                 combined[g, :, :base_rank, :] = merged_g
+
+#                 # Se c'è il bias, lo posizioniamo subito dopo il base_rank
+#                 if bias_tensor is not None:
+#                     combined[g, :, base_rank : base_rank + base_rank, :] = (
+#                         bias_tensor * bias_scaler
+#                     )
+
+#             combined_loras[module_name][matrix_key] = combined
+
+#     return combined_loras
